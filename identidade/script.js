@@ -327,9 +327,80 @@ function initHeroParallax() {
   });
 }
 
+function initScrollScene() {
+  const sections = document.querySelectorAll("[data-scroll-scene]");
+  const progressBar = document.getElementById("scrollProgressBar");
+  const globe = document.getElementById("scrollGlobe");
+  const links = document.querySelectorAll("[data-scroll-nav]");
+  if (!sections.length || !progressBar) return;
+
+  const globePositions = [
+    { x: 80, y: 48, s: 1.06, o: 0.22 },
+    { x: 72, y: 54, s: 0.98, o: 0.15 },
+    { x: 58, y: 32, s: 0.88, o: 0.18 },
+    { x: 82, y: 26, s: 1.18, o: 0.2 },
+    { x: 50, y: 52, s: 1.28, o: 0.14 },
+    { x: 76, y: 42, s: 1.02, o: 0.17 },
+    { x: 44, y: 34, s: 1.08, o: 0.15 },
+  ];
+
+  let ticking = false;
+
+  function update() {
+    const doc = document.documentElement.scrollHeight - window.innerHeight;
+    const p = doc > 0 ? Math.min(Math.max(window.scrollY / doc, 0), 1) : 0;
+    progressBar.style.setProperty("--scroll-p", String(p));
+
+    const mid = window.innerHeight * 0.5;
+    let best = 0;
+    let bestDist = Infinity;
+    sections.forEach((sec, i) => {
+      const r = sec.getBoundingClientRect();
+      const c = r.top + r.height * 0.5;
+      const d = Math.abs(c - mid);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+
+    links.forEach((a, i) => {
+      const on = i === best;
+      a.classList.toggle("is-active", on);
+      if (on) a.setAttribute("aria-current", "true");
+      else a.removeAttribute("aria-current");
+    });
+
+    if (globe) {
+      const pos = globePositions[best] ?? globePositions[0];
+      if (reduceMotion) {
+        globe.style.opacity = "0.09";
+        globe.style.transform = "translate3d(78vw, 46vh, 0) scale3d(1, 1, 1)";
+      } else {
+        globe.style.opacity = String(pos.o);
+        globe.style.transform = `translate3d(${pos.x}vw, ${pos.y}vh, 0) scale3d(${pos.s}, ${pos.s}, 1)`;
+      }
+    }
+
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  update();
+}
+
 initReveal();
 initCounters();
 initSlider();
 initAccordion();
 initTilt();
 initHeroParallax();
+initScrollScene();

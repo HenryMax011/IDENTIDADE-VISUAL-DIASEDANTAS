@@ -18,29 +18,46 @@
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
+    <div class="scroll-progress" aria-hidden="true">
+      <div class="scroll-progress__bar" id="scrollProgressBar"></div>
+    </div>
+    <nav class="scroll-nav" id="scrollNav" aria-label="Atalhos para seções principais">
+      <div class="scroll-nav__inner">
+        <div class="scroll-nav__line" aria-hidden="true"></div>
+        <ul class="scroll-nav__list">
+          <li class="scroll-nav__item" data-scroll-tip="Início">
+            <a class="scroll-nav__dot" href="#inicio" data-scroll-nav><span class="visually-hidden">Início</span></a>
+          </li>
+          <li class="scroll-nav__item" data-scroll-tip="Contato">
+            <a class="scroll-nav__dot" href="#contato" data-scroll-nav><span class="visually-hidden">Contato</span></a>
+          </li>
+          <li class="scroll-nav__item" data-scroll-tip="Resultados">
+            <a class="scroll-nav__dot" href="#resultados" data-scroll-nav><span class="visually-hidden">Resultados</span></a>
+          </li>
+          <li class="scroll-nav__item" data-scroll-tip="Método">
+            <a class="scroll-nav__dot" href="#metodo" data-scroll-nav><span class="visually-hidden">Método</span></a>
+          </li>
+          <li class="scroll-nav__item" data-scroll-tip="Serviços">
+            <a class="scroll-nav__dot" href="#servicos" data-scroll-nav><span class="visually-hidden">Serviços</span></a>
+          </li>
+          <li class="scroll-nav__item" data-scroll-tip="Quem somos">
+            <a class="scroll-nav__dot" href="#quem-somos" data-scroll-nav><span class="visually-hidden">Quem somos</span></a>
+          </li>
+          <li class="scroll-nav__item" data-scroll-tip="FAQ">
+            <a class="scroll-nav__dot" href="#faq" data-scroll-nav><span class="visually-hidden">FAQ</span></a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <!-- Globo removido — espaço reservado para logo futura -->
     <div class="bg-glow" aria-hidden="true">
       <span class="orb orb-a"></span>
       <span class="orb orb-b"></span>
     </div>
 
-    <div class="ticker-wrap" aria-hidden="true">
-      <div class="ticker ticker--fast">
-        <div class="ticker__track">
-          <span>Alvará · Vigilância Sanitária · Bombeiros · CETESB · PPRA · PGRSS · Dedetização</span>
-          <span>Alvará · Vigilância Sanitária · Bombeiros · CETESB · PPRA · PGRSS · Dedetização</span>
-        </div>
-      </div>
-      <div class="ticker ticker--slow">
-        <div class="ticker__track ticker__track--reverse">
-          <span>Transparência · Agilidade · Segurança jurídica · Acompanhamento técnico</span>
-          <span>Transparência · Agilidade · Segurança jurídica · Acompanhamento técnico</span>
-        </div>
-      </div>
-    </div>
-
     <header class="site-header" data-reveal>
       <div class="container nav-wrap">
-        <a class="logo" href="#top" aria-label="Dias e Dantas — início">
+        <a class="logo" href="#inicio" aria-label="Dias e Dantas — início">
           <span class="logo-mark" aria-hidden="true">D</span>
           <span class="logo-text">Dias<span>&amp;</span>Dantas</span>
         </a>
@@ -60,7 +77,7 @@
     </header>
 
     <main id="top">
-      <section class="hero">
+      <section class="hero" id="inicio" data-scroll-scene>
         <div class="container hero-grid">
           <div class="hero-copy" data-reveal>
             <p class="eyebrow">Não se preocupe — <strong class="eyebrow-accent">consultoria especializada</strong></p>
@@ -81,36 +98,14 @@
                 Atendimento consultivo com especialista
               </p>
             </div>
+            <p class="hero-hints" aria-hidden="true">
+              <span class="hero-hints__item"><span class="hero-hints__pulse"></span>Experiência guiada</span>
+              <span class="hero-hints__item"><span class="hero-hints__pulse"></span>Role para explorar</span>
+            </p>
           </div>
           <div class="hero-visual" data-reveal data-reveal-delay="1">
-            <div class="hero-art" id="heroArt" aria-hidden="true">
-              <svg viewBox="0 0 400 420" class="hero-svg" preserveAspectRatio="xMidYMid slice">
-                <defs>
-                  <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18" />
-                    <stop offset="55%" stop-color="#ff3b52" stop-opacity="0.22" />
-                    <stop offset="100%" stop-color="#e5091f" stop-opacity="0.14" />
-                  </linearGradient>
-                </defs>
-                <path
-                  class="hero-shape hero-shape--outer"
-                  d="M40 360 L200 40 L360 360 Z"
-                  fill="none"
-                  stroke="url(#g1)"
-                  stroke-width="6"
-                  stroke-linejoin="round"
-                  stroke-opacity="0.65"
-                />
-                <path
-                  class="hero-shape hero-shape--inner"
-                  d="M90 310 L200 120 L310 310 Z"
-                  fill="rgba(229, 9, 31, 0.015)"
-                  stroke="rgba(255, 255, 255, 0.04)"
-                  stroke-width="1"
-                />
-              </svg>
-              <div class="hero-scan"></div>
-            </div>
+            <!-- Espaço reservado para logo da empresa -->
+            <div class="hero-logo-placeholder" id="heroArt" aria-hidden="true"></div>
           </div>
         </div>
         <div class="hero-divider" aria-hidden="true"></div>
@@ -142,7 +137,7 @@
         </div>
       </section>
 
-      <section class="section section--lead" id="contato">
+      <section class="section section--lead" id="contato" data-scroll-scene>
         <div class="container lead-grid">
           <aside class="lead-aside" data-reveal>
             <div class="info-card">
@@ -193,7 +188,7 @@
         </div>
       </section>
 
-      <section class="section" id="resultados">
+      <section class="section" id="resultados" data-scroll-scene>
         <div class="container">
           <h2 data-reveal>Resultados rápidos que você entende</h2>
           <p class="section-sub" data-reveal>Métricas e entregas reais — com caminho técnico claro.</p>
@@ -251,7 +246,7 @@
         </div>
       </section>
 
-      <section class="section section--apc" id="metodo">
+      <section class="section section--apc" id="metodo" data-scroll-scene>
         <div class="container">
           <h2 data-reveal>Este é o método em ação</h2>
           <p class="section-sub" data-reveal>Fluxo simples para reduzir risco, ganhar previsibilidade e manter sua operação dentro da lei.</p>
@@ -291,7 +286,7 @@
         </div>
       </section>
 
-      <section class="section" id="servicos">
+      <section class="section" id="servicos" data-scroll-scene>
         <div class="container">
           <h2 data-reveal>Soluções sob medida para o sucesso da sua empresa</h2>
           <p class="section-sub" data-reveal>Serviços para cada fase do licenciamento e da regularização.</p>
@@ -430,7 +425,7 @@
         </div>
       </section>
 
-      <section class="section section--split" id="quem-somos">
+      <section class="section section--split" id="quem-somos" data-scroll-scene>
         <div class="container split-grid">
           <div data-reveal>
             <h2>Quem somos</h2>
@@ -521,7 +516,7 @@
         </div>
       </section>
 
-      <section class="section faq" id="faq">
+      <section class="section faq" id="faq" data-scroll-scene>
         <div class="container">
           <h2 data-reveal>Quais os tipos de alvará de funcionamento?</h2>
           <div class="faq-list faq-list--types">
