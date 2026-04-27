@@ -68,35 +68,18 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.bg-glow {
+.shader-background {
   position: fixed;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
   pointer-events: none;
   z-index: -2;
-  overflow: hidden;
-}
-
-.orb {
-  position: absolute;
-  width: min(520px, 70vw);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
-  animation: orbFloat 18s ease-in-out infinite;
-}
-
-.orb-a {
-  top: -8%;
-  right: -10%;
-  background: radial-gradient(circle, var(--red) 0%, transparent 70%);
-}
-
-.orb-b {
-  bottom: -15%;
-  left: -18%;
-  background: radial-gradient(circle, #3a0610 0%, transparent 65%);
-  animation-delay: -6s;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(229, 9, 31, 0.16), transparent 55%),
+    radial-gradient(ellipse at 50% 100%, rgba(122, 6, 18, 0.22), transparent 60%),
+    var(--bg);
 }
 
 .ticker-wrap {
@@ -905,30 +888,87 @@ button.is-loading .btn-spinner {
 }
 
 .phone-frame {
-  width: min(280px, 70vw);
-  border-radius: 32px;
-  padding: 14px 12px 18px;
-  background: linear-gradient(160deg, #2a2a2a, #0b0b0b);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: var(--shadow-soft);
+  position: relative;
+  width: min(260px, 72vw);
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: 9 / 19.2;
+  border-radius: 44px;
+  padding: 10px 9px 12px;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(160deg, #2e2a2a 0%, #0d0b0b 40%, #050505 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6) inset,
+    0 20px 60px rgba(0, 0, 0, 0.55),
+    0 0 80px rgba(229, 9, 31, 0.08);
+}
+
+.phone-frame::before,
+.phone-frame::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #1f1a1a, #0a0a0a);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Botão de volume (longo) */
+.phone-frame::before {
+  right: -3px;
+  top: 22%;
+  width: 4px;
+  height: 56px;
+}
+
+/* Botão de energia */
+.phone-frame::after {
+  left: -3px;
+  top: 28%;
+  width: 4px;
+  height: 38px;
 }
 
 .phone-notch {
-  width: 32%;
-  height: 18px;
-  margin: 0 auto 10px;
-  border-radius: 0 0 14px 14px;
+  position: relative;
+  width: 34%;
+  height: 0;
+  margin: 0 auto 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Dynamic Island (substitui o entalhe "retangular") */
+.phone-notch::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin: 4px auto 0;
+  border-radius: 40px;
   background: #000;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .phone-screen {
-  border-radius: 22px;
-  background: #0a0a0a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  min-height: 300px;
-  padding: 16px 14px;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 36px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 55%),
+    linear-gradient(180deg, #101010 0%, #080808 40%, #050505 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 20px 14px 16px;
   text-align: left;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
 
 .chat-slider {
@@ -1477,12 +1517,6 @@ main {
   }
 }
 
-@keyframes orbFloat {
-  50% {
-    transform: scale(1.05) translate(10px, -12px);
-  }
-}
-
 @keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(0, 210, 106, 0.55);
@@ -1714,5 +1748,10 @@ main {
 
   .phone-slider {
     gap: 10px;
+  }
+
+  .phone-frame::before,
+  .phone-frame::after {
+    display: none;
   }
 }

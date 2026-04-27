@@ -327,6 +327,227 @@ function initHeroParallax() {
   });
 }
 
+function initShaderBackground() {
+  const canvas = document.getElementById("shaderBackground");
+  if (!(canvas instanceof HTMLCanvasElement)) return;
+
+  const gl = canvas.getContext("webgl", { alpha: true, antialias: true });
+  if (!gl) return;
+
+  const vsSource = `
+    attribute vec4 aVertexPosition;
+    void main() {
+      gl_Position = aVertexPosition;
+    }
+  `;
+
+  const fsSource = `
+    precision highp float;
+    uniform vec2 iResolution;
+    uniform float iTime;
+    uniform float iScroll;
+
+    float hash(vec2 p) {
+      p = fract(p * vec2(123.34, 345.45));
+      p += dot(p, p + 34.345);
+      return fract(p.x * p.y);
+    }
+
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * (3.0 - 2.0 * f);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    }
+
+    float fbm(vec2 p) {
+      float value = 0.0;
+      float amp = 0.55;
+      mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
+      for (int i = 0; i < 5; i++) {
+        value += amp * noise(p);
+        p = m * p;
+        amp *= 0.5;
+      }
+      return value;
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / iResolution.xy;
+      vec2 p = (uv - 0.5) * vec2(iResolution.x / iResolution.y, 1.0);
+
+      float t = iTime * 0.15 + iScroll * 2.8;
+      vec2 q = p * 2.4;
+
+      q.x += sin(q.y * 1.5 + t * 1.2) * (0.18 + iScroll * 0.1);
+      q.y += cos(q.x * 1.7 - t * 0.9) * (0.15 + iScroll * 0.08);
+
+      float n1 = fbm(q + vec2(0.0, t));
+      float n2 = fbm(q * 1.85 - vec2(t * 0.8, t * 1.1));
+      float smoke = smoothstep(0.18, 0.95, mix(n1, n2, 0.52));
+
+      float vignette = smoothstep(1.35, 0.15, length(p));
+      float topFade = smoothstep(1.1, 0.2, uv.y);
+
+      vec3 dark = vec3(0.04, 0.0, 0.01);
+      vec3 mid = vec3(0.34, 0.03, 0.09);
+      vec3 glow = vec3(0.92, 0.14, 0.26);
+
+      vec3 color = mix(dark, mid, smoke);
+      color = mix(color, glow, pow(smoke, 2.2) * 0.75);
+      color *= vignette * topFade;
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+
+  function loadShader(type, source) {
+    const shader = gl.createShader(type);
+    if (!shader) return null;
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error("Shader compile error:", gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);
+      return null;
+    }
+    return shader;
+  }
+
+  function initShaderProgram() {
+    const vertexShader = loadShader(gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = loadShader(gl.FRAGMENT_SHADER, fsSource);
+    if (!vertexShader || !fragmentShader) return null;
+
+    const shaderProgram = gl.createProgram();
+    if (!shaderProgram) return null;
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+      console.error("Shader program link error:", gl.getProgramInfoLog(shaderProgram));
+      return null;
+    }
+    return shaderProgram;
+  }
+
+  const shaderProgram = initShaderProgram();
+  if (!shaderProgram) return;
+
+  const positionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      -1.0, -1.0,
+      1.0, -1.0,
+      -1.0, 1.0,
+      1.0, 1.0,
+    ]),
+    gl.STATIC_DRAW
+  );
+
+  const programInfo = {
+    program: shaderProgram,
+    attribLocations: {
+      vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+    },
+    uniformLocations: {
+      resolution: gl.getUniformLocation(shaderProgram, "iResolution"),
+      time: gl.getUniformLocation(shaderProgram, "iTime"),
+      scroll: gl.getUniformLocation(shaderProgram, "iScroll"),
+    },
+  };
+
+  let animationId = 0;
+  let running = false;
+  let startTime = performance.now();
+  let targetScroll = 0;
+  let smoothScroll = 0;
+
+  function getScrollProgress() {
+    const doc = document.documentElement.scrollHeight - window.innerHeight;
+    if (doc <= 0) return 0;
+    return Math.min(Math.max(window.scrollY / doc, 0), 1);
+  }
+
+  function resizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+
+  function render() {
+    if (reduceMotion) smoothScroll = targetScroll;
+    else smoothScroll += (targetScroll - smoothScroll) * 0.08;
+
+    const currentTime = (performance.now() - startTime) / 1000;
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.useProgram(programInfo.program);
+
+    gl.uniform2f(programInfo.uniformLocations.resolution, canvas.width, canvas.height);
+    gl.uniform1f(programInfo.uniformLocations.time, currentTime);
+    gl.uniform1f(programInfo.uniformLocations.scroll, smoothScroll);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  function animate() {
+    if (!running) return;
+    render();
+    animationId = requestAnimationFrame(animate);
+  }
+
+  function start() {
+    if (running || reduceMotion) return;
+    running = true;
+    animationId = requestAnimationFrame(animate);
+  }
+
+  function stop() {
+    running = false;
+    cancelAnimationFrame(animationId);
+  }
+
+  function onScrollShader() {
+    targetScroll = getScrollProgress();
+    if (reduceMotion) render();
+  }
+
+  function onResize() {
+    resizeCanvas();
+    targetScroll = getScrollProgress();
+    render();
+  }
+
+  targetScroll = getScrollProgress();
+  resizeCanvas();
+  window.addEventListener("resize", onResize);
+  window.addEventListener("scroll", onScrollShader, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else {
+      targetScroll = getScrollProgress();
+      if (reduceMotion) render();
+      else start();
+    }
+  });
+
+  if (reduceMotion) render();
+  else start();
+}
+
 function initScrollScene() {
   const sections = document.querySelectorAll("[data-scroll-scene]");
   const progressBar = document.getElementById("scrollProgressBar");
@@ -403,4 +624,5 @@ initSlider();
 initAccordion();
 initTilt();
 initHeroParallax();
+initShaderBackground();
 initScrollScene();
